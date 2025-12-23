@@ -33,4 +33,4 @@ class Task(models.Model):
     #   "reviewer_id": 1,
     reviewer = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True,related_name='reviewer_tasks')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_tasks')
-    due_date = models.DateTimeField(db_default=Now())
+    due_date = models.DateTimeField(db_default=Now)
