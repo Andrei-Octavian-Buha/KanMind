@@ -1,8 +1,20 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from auth_app.models import UserProfile
 
-class UserSerializer(serializers.ModelSerializer):
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = ["token","id","email","username"]
+    def get_token(self, obj):
+        token, created = Token.objects.get_or_create(user=obj)
+        return token.key
+
+
+class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
@@ -15,6 +27,11 @@ class UserSerializer(serializers.ModelSerializer):
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({"Password":"Passwords do not match"})
         return data
+    
+    def validate_email(self, value):
+        if User.objects.filter(email = value).exists():
+            raise serializers.ValidationError('Email already exists')
+        return value
     
     def create(self, validated_data):
         validated_data.pop('repeated_password')
