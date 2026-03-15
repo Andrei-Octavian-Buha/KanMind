@@ -22,7 +22,7 @@ class RegisterView(APIView):
             user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
-                "token": token.key,
+                "token": token.key,#token for test github commit
                 "fullname": user.username,
                 "email": user.email,
                 "user_id": user.id
