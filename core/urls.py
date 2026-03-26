@@ -16,10 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from auth_app.api.views import CheckEmailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    #GET {{base_url}}/api/email-check/?email=buha@a.com
+    path('api/email-check/', CheckEmailView.as_view()),
     path('api/', include('auth_app.api.urls')),
-    path('api/',include('oards_app.api.urls')),
+    path('api/',include('boards_app.api.urls')),
+    path('api/', include('tasks_api.api.uris')),
     path('api-auth/', include('rest_framework.urls'))
 ]
