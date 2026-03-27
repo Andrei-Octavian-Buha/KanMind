@@ -18,20 +18,12 @@ class TaskModel(models.Model):
         LOW = "low", "Low"
         MEDIUM = "medium", "Medium"
         HIGH = "high","High"
+        
     board = models.ForeignKey(BoardsModel, on_delete=models.CASCADE)
-    #"board": 12,
-    #"title": "Code-Review durchführen",
     title = models.CharField(max_length=100)
-    #"description": "Den neuen PR für das Feature X überprüfen",
     description = models.TextField(max_length=300)
-    #   "status": "review",
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="to-do")
-    #   "priority": "medium",
     priority = models.CharField(max_length=8, choices=StatusPriority.choices, default=StatusPriority.LOW)
-    #   "assignee_id": 13,
-    assignee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    #   "reviewer_id": 1,
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    #   "due_date": "2025-02-27"
+    assignee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="assigned_tasks")
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="review_tasks")
     due_date = models.DateField(default=date.today)
-    # }

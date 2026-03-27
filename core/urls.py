@@ -24,6 +24,6 @@ urlpatterns = [
     path('api/email-check/', CheckEmailView.as_view()),
     path('api/', include('auth_app.api.urls')),
     path('api/',include('boards_app.api.urls')),
-    path('api/', include('tasks_api.api.uris')),
+    path('api/', include('tasks_app.api.urls')),
     path('api-auth/', include('rest_framework.urls'))
 ]
