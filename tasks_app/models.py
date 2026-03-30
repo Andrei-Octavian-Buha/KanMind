@@ -20,6 +20,7 @@ class TaskModel(models.Model):
         HIGH = "high","High"
         
     board = models.ForeignKey(BoardsModel, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=300)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="to-do")
@@ -27,3 +28,6 @@ class TaskModel(models.Model):
     assignee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="assigned_tasks")
     reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="review_tasks")
     due_date = models.DateField(default=date.today)
+
+    def __str__(self):
+        return self.title

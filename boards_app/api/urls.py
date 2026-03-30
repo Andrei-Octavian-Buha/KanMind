@@ -4,6 +4,6 @@ from .views import BoardsViewSet
 
 
 router = routers.SimpleRouter()
-router.register(r'boards', BoardsViewSet)
+router.register(r'boards', BoardsViewSet, basename='board')
 
 urlpatterns = router.urls

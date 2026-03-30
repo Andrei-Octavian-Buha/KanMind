@@ -22,8 +22,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #GET {{base_url}}/api/email-check/?email=buha@a.com
     path('api/email-check/', CheckEmailView.as_view()),
-    path('api/', include('auth_app.api.urls')),
     path('api/',include('boards_app.api.urls')),
-    path('api/', include('tasks_app.api.urls')),
+    path('api/tasks/', include('tasks_app.api.urls')),
+    path('api/', include('comments_app.api.urls')),
+    path('api/', include('auth_app.api.urls')),
     path('api-auth/', include('rest_framework.urls'))
 ]
