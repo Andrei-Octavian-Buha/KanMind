@@ -13,7 +13,7 @@ class TaskSerializer(serializers.ModelSerializer):
     reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
                                                      source="reviewer",
                                                      required=False,
-                                                     write_only=True, 
+                                                     write_only=True,
                                                     )
     assignee = UserSerializer(read_only=True)
     reviewer = UserSerializer(read_only=True)
