@@ -8,11 +8,32 @@ from django.contrib.auth.models import User
 from .serializers import RegisterSerializer, EmailAuthSerializer
 from boards_app.api.serializers import UserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate
 
 class RegisterView(APIView):
+    """
+    API endpoint for user registration.
+
+    Creates a new user account and returns an authentication token
+    along with basic user information.
+
+    Permissions:
+        - Public (AllowAny)
+    """
+        
     permission_classes = [AllowAny]
 
+    """
+    Handle user registration.
+
+    Request body:
+        email (str): User email
+        password (str): User password
+        first_name (str): User first name
+
+    Returns:
+        201: User successfully created with token
+        400: Validation errors
+    """
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -28,14 +49,35 @@ class RegisterView(APIView):
     
 
 class LoginView(ObtainAuthToken):
+    """
+    API endpoint for user authentication.
+
+    Authenticates a user using email and password and returns
+    an authentication token with user details.
+
+    Permissions:
+        - Public (AllowAny)
+    """
     serializer_class = EmailAuthSerializer
     permission_classes = [AllowAny]
+
     def post(self,request):
+        """
+        Handle user login.
+
+        Request body:
+            email (str): User email
+            password (str): User password
+
+        Returns:
+            200: Token and user data
+            400: Invalid credentials
+        """
         serializer = self.serializer_class(data=request.data)
         data = {}
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
             data = {
                 "token": token.key,
                 "fullname": user.first_name,
@@ -47,9 +89,28 @@ class LoginView(ObtainAuthToken):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class CheckEmailView(APIView):
+    """
+    API endpoint to check if a user exists by email.
+
+    Requires authentication.
+
+    Permissions:
+        - Authenticated users only
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self,request):
+        """
+        Retrieve user information by email.
+
+        Query params:
+            email (str): Email to search for
+
+        Returns:
+            200: User data
+            400: Missing email parameter
+            404: User not found
+        """
         email = request.query_params.get('email')
 
         if not email:
@@ -71,9 +132,23 @@ class CheckEmailView(APIView):
         
 
 class LogoutView(APIView):
+    """
+    API endpoint for user logout.
+
+    Deletes the current user's authentication token.
+
+    Permissions:
+        - Authenticated users only
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """
+        Invalidate the user's token.
+
+        Returns:
+            200: Logout successful
+        """
         request.user.auth_token.delete()
-        return Response({"detail":"Logout succesed"}, status=status.HTTP_200_OK)
+        return Response({"detail":"Logout succeeded"}, status=status.HTTP_200_OK)
 

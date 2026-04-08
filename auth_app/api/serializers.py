@@ -5,6 +5,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for returning public user data.
+    Used mainly for profile display / API responses.
+    """
     fullname = serializers.CharField(source='first_name', read_only=True)
     class Meta:
         model = User
@@ -12,7 +16,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """
+    Serializer responsible for user registration.
 
+    Handles:
+    - password confirmation validation
+    - email uniqueness check
+    - user creation with token generation
+    """
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
     fullname = serializers.CharField(source='first_name', write_only=True)
@@ -21,17 +32,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id','fullname','email','password','repeated_password']
     
     def validate(self, data):
+        """
+        Ensure password and repeated_password match.
+        """
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({"Password":"Passwords do not match"})
         return data
     
     def validate_email(self, value):
+        """
+        Ensure email is unique in the system.
+        """
         if User.objects.filter(email = value).exists():
             raise serializers.ValidationError('Email already exists')
         return value
     
     
     def create(self, validated_data):
+        """
+        Create a new user instance.
+
+        Uses email as username and hashes password automatically.
+        Also creates an auth token.
+        """
         first_name = validated_data.get('first_name', '')
         validated_data.pop('repeated_password')
 
@@ -47,10 +70,21 @@ class RegisterSerializer(serializers.ModelSerializer):
     
 
 class EmailAuthSerializer(serializers.Serializer):
+    """
+    Authentication serializer using email + password.
+
+    Validates credentials using Django authenticate system
+    and attaches the user object if valid.
+    """
     email = serializers.EmailField()
     password = serializers.CharField(style={'input_type':'password'}, trim_whitespace=False)
 
     def validate(self,atters):
+        """
+        Validate login credentials.
+
+        Returns user object if authentication succeeds.
+        """
         email = atters.get('email')
         password = atters.get('password')
 
