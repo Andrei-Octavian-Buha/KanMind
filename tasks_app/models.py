@@ -6,6 +6,12 @@ from boards_app.models import BoardsModel
 
 # Create your models here.
 class TaskModel(models.Model):
+    """
+    Represents a task within a Kanban board.
+
+    A task is the core unit of work and belongs to a board.
+    It can be assigned, reviewed, and tracked through multiple statuses.
+    """
    
     STATUS_CHOICES = [
         ("to-do","to-do"),
@@ -30,4 +36,10 @@ class TaskModel(models.Model):
     due_date = models.DateField(default=date.today)
 
     def __str__(self):
+        """
+        Returns a string representation of the task.
+
+        Returns:
+            str: Task title
+        """
         return self.title

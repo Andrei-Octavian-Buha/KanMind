@@ -5,6 +5,15 @@ from auth_app.api.serializers import UserSerializer
 from boards_app.models import BoardsModel
 
 class TaskSerializer(serializers.ModelSerializer):
+    """
+    Serializer for TaskModel.
+
+    Handles:
+    - Task creation and update
+    - Nested read-only representation for assignee/reviewer
+    - Foreign key assignment via *_id fields
+    - Aggregated comment count
+    """
     assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
                                                      write_only=True,
                                                      source="assignee",
@@ -26,4 +35,7 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = ["id","board","title","description","status","priority","assignee_id","reviewer_id","assignee","reviewer","due_date", "comments_count"]
 
     def get_comments_count(self,obj):
-            return obj.comments.count()
+        """
+        Returns total number of comments attached to the task.
+        """
+        return obj.comments.count()
