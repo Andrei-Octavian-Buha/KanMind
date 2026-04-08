@@ -1,3 +1,9 @@
+"""
+URL configuration for comments API.
+
+Defines endpoints for listing, creating, and deleting comments
+associated with tasks.
+"""
 from django.urls import path
 from .views import CommentListCreateView, CommentDeleteView
 
