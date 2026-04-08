@@ -54,7 +54,7 @@ cd kanMind
 ### 2. Create virtual environment
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 ```
 
 ### Activate environment
