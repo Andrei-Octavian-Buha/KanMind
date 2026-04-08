@@ -47,7 +47,7 @@ kanMind/
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/your-username/kanMind.git
+git clone https://github.com/Andrei-Octavian-Buha/kanMind.git
 cd kanMind
 ```
 
