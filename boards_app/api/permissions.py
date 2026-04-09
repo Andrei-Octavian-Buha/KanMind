@@ -8,6 +8,9 @@ class IsBoardOwnerOrMember(BasePermission):
     - Access is granted if the user is the board owner
     - OR if the user is included in the board members list
     """
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+    
     def has_object_permission(self, request, view, obj):
         """
         Checks object-level permission for a board instance.
@@ -21,6 +24,6 @@ class IsBoardOwnerOrMember(BasePermission):
             bool: True if user has access, False otherwise
         """
         return (
-            obj.owner_id == request.user.id or
+            obj.owner_id == request.user.id or 
             obj.members.filter(id=request.user.id).exists()
         )
