@@ -36,7 +36,7 @@ class BoardsSerializer(serializers.ModelSerializer):
             "owner_id",
         ]
 
-    def get_members_count(self, obj):
+    def get_member_count(self, obj):
         """
         Returns number of members in a board.
         """
@@ -98,10 +98,24 @@ class BoardPatchSerializer(serializers.ModelSerializer):
     - owner
     - members
     """
-
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), many=True, write_only=True
+    )
     owner_data = UserSerializer(source="owner", read_only=True)
     members_data = UserSerializer(source="members", many=True, read_only=True)
 
     class Meta:
         model = BoardsModel
-        fields = ["id", "title", "owner_data", "members_data"]
+        fields = ["id", "title", "owner_data", "members_data", "members"]
+
+    def update(self, instance, validated_data):
+        """
+        Updates board data and optionally replaces members list.
+        """
+        members = validated_data.pop("members", None)
+        instance.title = validated_data.get("title", instance.title)
+        instance.save()
+
+        if members is not None:
+            instance.members.set(members)
+        return instance
