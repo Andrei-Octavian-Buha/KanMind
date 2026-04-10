@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-
+from boards_app.models import BoardsModel
 class IsTaskCreatorOrBoardOwner(BasePermission):
     """
     Object-level permission for TaskModel.
@@ -26,3 +26,11 @@ class IsTaskCreatorOrBoardOwner(BasePermission):
             obj.creator == request.user or
             obj.board.owner == request.user
         )
+class IsBoardMember(BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            board_id = request.data.get('board')
+            if not board_id:
+                return True
+            return BoardsModel.objects.filter(id=board_id, members=request.user).exists()
+        return True

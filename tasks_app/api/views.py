@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from tasks_app.models import TaskModel
 from .serializers import TaskSerializer
-from .permissions import IsTaskCreatorOrBoardOwner
+from .permissions import IsTaskCreatorOrBoardOwner,IsBoardMember
 
 class TasksViewSet(mixins.RetrieveModelMixin,
                    mixins.CreateModelMixin,
@@ -27,8 +27,20 @@ class TasksViewSet(mixins.RetrieveModelMixin,
     queryset = TaskModel.objects.all()
     serializer_class = TaskSerializer
 
-    permission_classes = [IsAuthenticated, IsTaskCreatorOrBoardOwner]
+    permission_classes = [IsAuthenticated, IsBoardMember, IsTaskCreatorOrBoardOwner]
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsBoardMember()]
+        if self.action in ['retrive', 'update','partial_update','destroy']:
+            return [IsAuthenticated(), IsTaskCreatorOrBoardOwner()]
+        return [IsAuthenticated()]
+    def get_queryset(self):
+        """
+        User can see only the tasks were he is member
+        """
+        return TaskModel.objects.filter(board__members=self.request.user).distinct()
+    
     def perform_create(self, serializer):
         """
         Automatically assigns the authenticated user as task creator.

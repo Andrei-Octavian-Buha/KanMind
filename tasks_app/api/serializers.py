@@ -24,18 +24,35 @@ class TaskSerializer(serializers.ModelSerializer):
                                                      required=False,
                                                      write_only=True,
                                                     )
+    board = serializers.PrimaryKeyRelatedField(queryset=BoardsModel.objects.all())
+    
     assignee = UserSerializer(read_only=True)
     reviewer = UserSerializer(read_only=True)
     comments_count = serializers.SerializerMethodField()
-    board = serializers.PrimaryKeyRelatedField(queryset=BoardsModel.objects.all())
-
-    #comments_count = serializers.IntegerField(source="comments.count", read_only=True) for counting comments
     class Meta():
         model = TaskModel
-        fields = ["id","board","title","description","status","priority","assignee_id","reviewer_id","assignee","reviewer","due_date", "comments_count"]
+        fields = ["id","board","title","description","status",
+                  "priority","assignee_id","reviewer_id","assignee",
+                  "reviewer","due_date", "comments_count"
+        ]
 
     def get_comments_count(self,obj):
         """
         Returns total number of comments attached to the task.
         """
         return obj.comments.count()
+    
+    def validate(self, data):
+        board = data.get('board')
+        assignee = data.get('assignee')
+        reviewer = data.get('reviewer')
+
+        if assignee and not board.members.filter(id=assignee.id).exists():
+            raise serializers.ValidationError(
+                {"assignee_id": "The user should be member"}
+            )
+        if reviewer and not board.members.filter(id=reviewer.id).exists():
+            raise serializers.ValidationError(
+                {"reviewer_id": "Reviewer should be member "}
+            )
+        return data
