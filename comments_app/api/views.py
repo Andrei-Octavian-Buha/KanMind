@@ -33,7 +33,8 @@ class CommentListCreateView(APIView):
         Returns:
             list: Serialized comments
         """
-        comments = Comment.objects.filter(task_id=task_id)
+        task = get_object_or_404(TaskModel, id=task_id)
+        comments = Comment.objects.filter(task=task)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
     
@@ -80,9 +81,10 @@ class CommentDeleteView(APIView):
             204: Deleted successfully
             403: Not allowed
         """
+        task = get_object_or_404(TaskModel, id=task_id)
         comment = get_object_or_404(Comment,
                                     id=comment_id,
-                                    task_id=task_id
+                                    task=task
                                     )
         if comment.author != request.user:
             return Response(

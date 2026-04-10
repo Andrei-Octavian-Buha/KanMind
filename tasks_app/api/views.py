@@ -32,15 +32,19 @@ class TasksViewSet(mixins.RetrieveModelMixin,
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated(), IsBoardMember()]
-        if self.action in ['retrive', 'update','partial_update','destroy']:
+        
+        if self.action in ['update','partial_update','destroy']:
             return [IsAuthenticated(), IsTaskCreatorOrBoardOwner()]
+        
+        if self.action == 'retrieve':
+            return [IsAuthenticated(), IsBoardMember()]
         return [IsAuthenticated()]
+    
     def get_queryset(self):
         """
         User can see only the tasks were he is member
         """
-        return TaskModel.objects.filter(board__members=self.request.user).distinct()
-    
+        return TaskModel.objects.all()
     def perform_create(self, serializer):
         """
         Automatically assigns the authenticated user as task creator.

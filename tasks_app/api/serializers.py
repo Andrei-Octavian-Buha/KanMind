@@ -15,20 +15,22 @@ class TaskSerializer(serializers.ModelSerializer):
     - Aggregated comment count
     """
     assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
-                                                     write_only=True,
                                                      source="assignee",
+                                                     write_only=True,
                                                      required=False,
+                                                     allow_null=True
                                                     )
     reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
                                                      source="reviewer",
                                                      required=False,
                                                      write_only=True,
+                                                     allow_null=True
                                                     )
     board = serializers.PrimaryKeyRelatedField(queryset=BoardsModel.objects.all())
-    
     assignee = UserSerializer(read_only=True)
     reviewer = UserSerializer(read_only=True)
     comments_count = serializers.SerializerMethodField()
+
     class Meta():
         model = TaskModel
         fields = ["id","board","title","description","status",
@@ -43,16 +45,21 @@ class TaskSerializer(serializers.ModelSerializer):
         return obj.comments.count()
     
     def validate(self, data):
-        board = data.get('board')
+        board = data.get('board') or getattr(self.instance, 'board', None)
         assignee = data.get('assignee')
         reviewer = data.get('reviewer')
+
+        if not board:
+            raise serializers.ValidationError({"board": "Board is required."})
 
         if assignee and not board.members.filter(id=assignee.id).exists():
             raise serializers.ValidationError(
                 {"assignee_id": "The user should be member"}
             )
+
         if reviewer and not board.members.filter(id=reviewer.id).exists():
             raise serializers.ValidationError(
-                {"reviewer_id": "Reviewer should be member "}
+                {"reviewer_id": "Reviewer should be member"}
             )
+
         return data

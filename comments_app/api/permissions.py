@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission
 from tasks_app.models import TaskModel
 from django.db.models import Q
+from rest_framework.exceptions import NotFound
 
 class CanAccessTaskComments(BasePermission):
     """
@@ -24,14 +25,12 @@ class CanAccessTaskComments(BasePermission):
         Returns:
             bool: True if access is allowed, False otherwise
         """
-        if not request.user.is_authenticated:
-            return False
-
         task_id = view.kwargs.get("task_id")
-
-        return TaskModel.objects.filter(
-            id=task_id
-        ).filter(
-            Q(board__members=request.user) |
-            Q(board__owner=request.user)
-        ).exists()
+        try: 
+            task = TaskModel.objects.get(id=task_id)
+        except TaskModel.DoesNotExist:
+            raise NotFound("Task not found.")
+        is_member = task.board.members.filter(id=request.user.id).exists()
+        is_owner = task.board.owener == request.user
+        
+        return is_member or is_owner

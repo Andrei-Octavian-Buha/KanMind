@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 from boards_app.models import BoardsModel
+from rest_framework.exceptions import NotFound
+
 class IsTaskCreatorOrBoardOwner(BasePermission):
     """
     Object-level permission for TaskModel.
@@ -10,27 +12,30 @@ class IsTaskCreatorOrBoardOwner(BasePermission):
 
     This ensures both task-level ownership and board-level administrative control.
     """
+class IsTaskCreatorOrBoardOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
-        """
-        Checks whether the user can access or modify a specific task instance.
+        is_member = obj.board.members.filter(id=request.user.id).exists()
+        is_owner = obj.board.owner == request.user
+        is_creator = obj.creator == request.user
 
-        Args:
-            request: HTTP request containing authenticated user
-            view: DRF view handling the request
-            obj: TaskModel instance
+        return is_member and (is_creator or is_owner)
+    
 
-        Returns:
-            bool: True if access is allowed, False otherwise
-        """
-        return (
-            obj.creator == request.user or
-            obj.board.owner == request.user
-        )
 class IsBoardMember(BasePermission):
     def has_permission(self, request, view):
-        if request.method == 'POST':
-            board_id = request.data.get('board')
-            if not board_id:
-                return True
-            return BoardsModel.objects.filter(id=board_id, members=request.user).exists()
-        return True
+        if request.method != 'POST':
+            return True
+        
+        board_id = request.data.get('board')
+        if not board_id:
+            return NotFound("Board not provided.")
+        
+        try:
+            board = BoardsModel.objects.get(id=board_id)
+        except BoardsModel.DoesNotExist:
+            raise NotFound(detail="Board not found.")
+        
+        is_member = board.members.filter(id=request.user.id).exists()
+        is_owner = board.owner == request.user
+
+        return is_member or is_owner
