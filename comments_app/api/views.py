@@ -61,6 +61,7 @@ class CommentListCreateView(APIView):
     
 
 class CommentDeleteView(APIView):
+    permission_classes = [IsAuthenticated, CanAccessTaskComments]
     """
     Handles deletion of a comment.
 
