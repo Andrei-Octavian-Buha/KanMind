@@ -29,7 +29,7 @@ class CanAccessTaskComments(BasePermission):
         try: 
             task = TaskModel.objects.get(id=task_id)
         except TaskModel.DoesNotExist:
-            return False
+            raise NotFound(detail="Task not found.")
         is_member = task.board.members.filter(id=request.user.id).exists()
         is_owner = task.board.owner == request.user
         
