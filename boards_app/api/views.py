@@ -23,16 +23,11 @@ class BoardsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        
-        # Dacă este acțiunea 'list' (GET /boards/), filtrăm rezultatele.
-        # Dacă este 'retrieve' (GET /boards/ID/), returnăm tot pentru a lăsa 
-        # clasa de permisiuni să verifice dacă dăm 403 sau 404.
         if self.action == 'list':
             queryset = BoardsModel.objects.filter(Q(owner=user) | Q(members=user))
         else:
             queryset = BoardsModel.objects.all()
-
-        # Optimizare: aducem membrii și task-urile într-o singură interogare pentru 'retrieve'
+            
         if self.action == 'retrieve':
             queryset = queryset.prefetch_related('members', 'taskmodel_set')
 
